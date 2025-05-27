@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tea Event Radar</title>
+  <link rel="stylesheet" href="panel.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-bar">
+        <div class="header-title">
+          <img src="images/icon128.png" class="header-icon" alt="Tea Event Radar Icon">
+          <h1>Tea Event Radar</h1>
+          <span class="version">v1.0</span>
+        </div>
+        <a class="author-link" noreferrer target="_blank">Made by @Liko</a>
+      </div>
+      
+      <!-- 搜索和过滤区域 -->
+      <div class="search-filter-row">
+        <div class="search-box">
+          <i class="ri-search-line search-icon"></i>
+          <input type="text" id="searchInput" placeholder="输入埋点事件名过滤...">
+        </div>
+        
+        <div class="filter-dropdown">
+          <select id="filterMode" class="filter-select">
+            <option value="include" selected>like</option>
+            <option value="exclude">not like</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- 搜索标签 -->
+      <div id="searchTags" class="search-tags"></div>
+    </header>
+    
+    <div class="events-container">
+      <div id="noEvents" class="no-events">
+        <div class="empty-state">
+          <img src="images/kong.png" class="empty-img" alt="Empty" />
+          <p class="empty-title">Nothing here</p>
+          <p class="empty-desc">Click Radar Up 📡 to start capturing events</p>
+        </div>
+      </div>
+      <div id="eventsList" class="events-list"></div>
+    </div>
+    
+    <footer>
+      <div class="controls">
+        <div class="event-counter">
+          <span id="eventCount" class="counter-number">0</span>
+          <span class="counter-text">Events</span>
+        </div>
+        
+        <div class="controls-buttons">
+          <button id="toggleBtn" class="btn btn-primary">
+            <i id="toggleIcon" class="ri-play-fill"></i>
+            <span id="toggleText">RadarUp</span>
+          </button>
+          
+          <button id="clearBtn" class="btn btn-outline">
+            <i class="ri-delete-bin-line"></i>
+            Clear
+          </button>
+        </div>
+      </div>
+    </footer>
+  </div>
+  
+  <script src="panel.js"></script>
+</body>
+</html> 
