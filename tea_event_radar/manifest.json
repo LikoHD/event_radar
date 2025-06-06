@@ -3,7 +3,7 @@
   "version": "1.0.1",
   "description": "优雅展示网页埋点上报信息，支持搜索、过滤、复制",
   "manifest_version": 3,
-  "permissions": ["webRequest", "storage", "scripting", "activeTab", "sidePanel", "clipboardWrite"],
+  "permissions": ["webRequest", "scripting", "activeTab", "sidePanel", "clipboardWrite"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "service-worker.js"
