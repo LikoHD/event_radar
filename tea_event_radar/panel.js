@@ -161,6 +161,8 @@ clearBtn.addEventListener('click', () => {
   chrome.runtime.sendMessage({ action: 'clearEvents' }, (response) => {
     if (response && response.success) {
       allEvents = [];
+      // 清除展开状态记录
+      expandedCards.clear();
       renderEvents(allEvents);
       updateEventCount();
       // 清除搜索关键词
@@ -304,6 +306,7 @@ chrome.runtime.onMessage.addListener((message) => {
 let isUserInteracting = false;
 let userInteractTimeout;
 let isCardExpanded = false; // 是否有卡片处于展开状态
+let expandedCards = new Set(); // 存储已展开卡片的ID
 
 // 自动滚动到底部函数
 function autoScrollToBottom() {
@@ -613,9 +616,21 @@ function createEventCard(event) {
   card.appendChild(header);
   card.appendChild(content);
   
+  // 检查当前卡片是否之前已展开
+  if (expandedCards.has(event.id)) {
+    content.classList.add('active');
+  }
+
   // 添加点击事件，展开/折叠卡片
   header.addEventListener('click', () => {
     content.classList.toggle('active');
+    
+    // 更新展开状态记录
+    if (content.classList.contains('active')) {
+      expandedCards.add(event.id);
+    } else {
+      expandedCards.delete(event.id);
+    }
 
     // 更新是否有展开卡片
     isCardExpanded = document.querySelector('.event-content.active') !== null;
