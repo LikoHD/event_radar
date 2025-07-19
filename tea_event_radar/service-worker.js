@@ -2,6 +2,15 @@
 let capturedEvents = [];
 let isCapturing = false;
 
+// 性能优化配置
+const MAX_EVENTS = 1000; // 最大事件数量
+const CLEANUP_THRESHOLD = 1200; // 清理阈值
+const UPDATE_DEBOUNCE_TIME = 100; // 更新防抖时间(ms)
+
+// 防抖和批量更新相关变量
+let updateTimeout = null;
+let pendingUpdates = false;
+
 // 监听网络请求
 chrome.webRequest.onBeforeRequest.addListener(
   (details) => {
@@ -43,8 +52,11 @@ chrome.webRequest.onBeforeRequest.addListener(
           
           capturedEvents.unshift(eventData); // 新事件放在前面
           
-          // 通知面板更新
-          updatePanel();
+          // 检查并清理过多的事件
+          cleanupEventsIfNeeded();
+          
+          // 防抖更新面板
+          debouncedUpdatePanel();
         }
       } catch (error) {
        
@@ -65,7 +77,7 @@ chrome.webRequest.onSendHeaders.addListener(
       const event = capturedEvents.find(e => e.url === details.url && !e.headers);
       if (event) {
         event.headers = details.requestHeaders;
-        updatePanel();
+        debouncedUpdatePanel();
       }
     }
   },
@@ -82,12 +94,36 @@ chrome.webRequest.onCompleted.addListener(
       if (event) {
         event.status = details.statusCode;
         event.statusText = details.statusLine;
-        updatePanel();
+        debouncedUpdatePanel();
       }
     }
   },
   { urls: ["<all_urls>"] }
 );
+
+// 清理过多的事件
+function cleanupEventsIfNeeded() {
+  if (capturedEvents.length >= CLEANUP_THRESHOLD) {
+    // 保留最新的MAX_EVENTS个事件
+    capturedEvents = capturedEvents.slice(0, MAX_EVENTS);
+    console.log(`事件数量已清理，当前保留 ${capturedEvents.length} 个事件`);
+  }
+}
+
+// 防抖更新面板
+function debouncedUpdatePanel() {
+  if (updateTimeout) {
+    clearTimeout(updateTimeout);
+  }
+  
+  pendingUpdates = true;
+  updateTimeout = setTimeout(() => {
+    if (pendingUpdates) {
+      updatePanel();
+      pendingUpdates = false;
+    }
+  }, UPDATE_DEBOUNCE_TIME);
+}
 
 // 更新侧边栏面板
 function updatePanel() {
@@ -106,7 +142,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sendResponse({ events: capturedEvents });
   } else if (message.action === "clearEvents") {
     capturedEvents = [];
-    updatePanel();
+    debouncedUpdatePanel();
     sendResponse({ success: true });
   } else if (message.action === "startCapturing") {
     isCapturing = true;
@@ -116,6 +152,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sendResponse({ success: true, isCapturing });
   } else if (message.action === "getStatus") {
     sendResponse({ isCapturing });
+  } else if (message.action === "resizePanel") {
+    // 调整面板宽度
+    resizeInPagePanel(message.width);
+    sendResponse({ success: true });
   }
   return true;
 });
@@ -180,7 +220,7 @@ function createInPagePanel() {
     position: fixed;
     top: 0;
     right: 0;
-    width: 360px;
+    width: 400px;
     height: 100vh;
     background-color: #fff;
     box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
@@ -222,6 +262,40 @@ function createInPagePanel() {
 // 初始化扩展
 function initializeExtension() {
   console.log("Tea Event Radar 服务工作者已启动");
+}
+
+// 防抖变量
+let resizeTimeout = null;
+let lastResizeWidth = null;
+
+// 调整页面内面板宽度（防抖优化）
+function resizeInPagePanel(width) {
+  // 如果宽度没有变化，直接返回
+  if (lastResizeWidth === width) {
+    return;
+  }
+  
+  // 清除之前的延时调用
+  if (resizeTimeout) {
+    clearTimeout(resizeTimeout);
+  }
+  
+  // 使用防抖机制，减少频繁调用
+  resizeTimeout = setTimeout(() => {
+    lastResizeWidth = width;
+    
+    // 向所有标签页发送调整宽度的消息
+    chrome.tabs.query({}, (tabs) => {
+      tabs.forEach(tab => {
+        chrome.tabs.sendMessage(tab.id, {
+          action: 'resizePanel',
+          width: width
+        }).catch(() => {
+          // 忽略消息发送失败的情况（标签页可能没有注入面板）
+        });
+      });
+    });
+  }, 10); // 10ms防抖延迟
 }
 
 // 启动初始化

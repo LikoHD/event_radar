@@ -19,6 +19,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     
     sendResponse({ success: true });
   }
+  else if (message.action === "resizePanel") {
+    console.log("收到调整面板宽度的请求:", message.width);
+    
+    // 调整页面内面板宽度
+    const existingPanel = document.getElementById('tea-event-radar-panel');
+    if (existingPanel) {
+      existingPanel.style.width = message.width + 'px';
+    }
+    
+    sendResponse({ success: true });
+  }
   return true;
 });
 

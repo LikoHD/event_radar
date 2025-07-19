@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css">
 </head>
 <body>
+  <div class="resize-handle"></div>
   <div class="container">
     <header>
       <div class="header-bar">
@@ -19,7 +20,7 @@
         <a class="author-link" noreferrer target="_blank">Made by @Liko</a>
       </div>
       
-      <!-- 搜索和过滤区域 -->
+
       <div class="search-filter-row">
         <div class="search-box">
           <i class="ri-search-line search-icon"></i>
@@ -60,6 +61,11 @@
           <button id="toggleBtn" class="btn btn-primary">
             <i id="toggleIcon" class="ri-play-fill"></i>
             <span id="toggleText">RadarUp</span>
+          </button>
+          
+          <button id="downloadBtn" class="btn btn-outline">
+            <i class="ri-download-2-line"></i>
+            <span>CSV</span>
           </button>
           
           <button id="clearBtn" class="btn btn-outline">
